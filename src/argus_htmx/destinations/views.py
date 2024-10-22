@@ -7,4 +7,4 @@ from django.http import HttpResponse
 
 def destinations(request) -> HttpResponse:
     context = {}
-    return render(request, "htmx/base.html", context=context)
+    return render(request, "htmx/destinations/destinations.html", context=context)
