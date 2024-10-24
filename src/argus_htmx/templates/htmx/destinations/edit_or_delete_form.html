@@ -1,0 +1,24 @@
+<form action="{% url 'htmx:destinations-update' destination.id%}" method="post">
+    {% csrf_token %}
+    <fieldset class="menu menu-horizontal menu-md border border-primary items-center gap-4">
+        <legend class="menu-title">Update destination</legend>
+
+        {% for field in form %}
+        <label class="input input-bordered flex items-center gap-2">
+            {{ field.label }}
+            {{ field }}
+        </label>
+
+        {% empty %}
+        <p>
+            Something went wrong
+        </p>
+        {% endfor %}
+        <input type="submit" value="Update" class="btn btn-primary">
+    </fieldset>
+</form>
+
+<form action="{% url 'htmx:destinations-delete' destination.id%}" method="post">
+    {% csrf_token %}
+    <input type="submit" value="Delete" class="btn btn-secondary">
+</form>
