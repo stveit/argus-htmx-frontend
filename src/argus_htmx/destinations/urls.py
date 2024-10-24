@@ -7,4 +7,5 @@ urlpatterns = [
     path("", views.destinations, name="destinations"),
     path("create_destination/", views.destinations_create, name="destinations-create"),
     path("update_destination/<int:pk>/", views.destinations_update, name="destinations-update"),
+    path("delete_destination/<int:pk>/", views.destinations_delete, name="destinations-delete"),
 ]

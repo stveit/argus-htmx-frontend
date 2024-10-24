@@ -73,3 +73,9 @@ def destinations_update(request, pk: int) -> HttpResponse:
         destination.settings = {"email_address": form.cleaned_data["value"]}
         destination.save()
     return redirect("htmx:destinations")
+
+
+@require_POST
+def destinations_delete(request, pk: int) -> HttpResponse:
+    DestinationConfig.objects.get(pk=pk).delete()
+    return redirect("htmx:destinations")
