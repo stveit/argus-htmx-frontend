@@ -4,11 +4,14 @@ from django.shortcuts import render
 
 from django.http import HttpResponse
 
+from django.views.decorators.http import require_GET
+
 from argus.notificationprofile.models import DestinationConfig, Media
 
 from .forms import DestinationForm
 
 
+@require_GET
 def destinations(request) -> HttpResponse:
     destinations = _get_destinations_and_forms_grouped_by_media(request.user)
     context = {
