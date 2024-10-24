@@ -62,3 +62,14 @@ def destinations_create(request) -> HttpResponse:
         )
         destination.save()
     return redirect("htmx:destinations")
+
+
+@require_POST
+def destinations_update(request, pk: int) -> HttpResponse:
+    form = DestinationForm(request.POST or None)
+    if form.is_valid():
+        destination = DestinationConfig.objects.get(pk=pk)
+        destination.label = form.cleaned_data.get("label", "")
+        destination.settings = {"email_address": form.cleaned_data["value"]}
+        destination.save()
+    return redirect("htmx:destinations")
