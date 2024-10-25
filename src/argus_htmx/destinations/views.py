@@ -1,14 +1,17 @@
 from __future__ import annotations
 
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 
 from django.http import HttpResponse
 
 from django.views.decorators.http import require_GET, require_POST
 
+from rest_framework.exceptions import ValidationError
+
 from argus.notificationprofile.models import DestinationConfig, Media
 from argus.notificationprofile.media import api_safely_get_medium_object
 from argus.notificationprofile.serializers import RequestDestinationConfigSerializer
+from argus.notificationprofile.media.base import NotificationMedium
 
 from .forms import DestinationForm
 
@@ -105,5 +108,13 @@ def destinations_update(request, pk: int) -> HttpResponse:
 
 @require_POST
 def destinations_delete(request, pk: int) -> HttpResponse:
-    DestinationConfig.objects.get(pk=pk).delete()
-    return redirect("htmx:destinations")
+    destination = get_object_or_404(request.user.destinations.all(), pk=pk)
+
+    try:
+        medium = api_safely_get_medium_object(destination.media.slug)
+        medium.raise_if_not_deletable(destination)
+    except NotificationMedium.NotDeletableError as e:
+        raise ValidationError(str(e))
+    else:
+        destination.delete()
+        return redirect("htmx:destinations")
