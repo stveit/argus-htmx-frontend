@@ -75,9 +75,23 @@ def destinations_update(request, pk: int) -> HttpResponse:
     form = DestinationForm(request.POST or None)
     if form.is_valid():
         destination = DestinationConfig.objects.get(pk=pk)
-        destination.label = form.cleaned_data.get("label", "")
-        destination.settings = {"email_address": form.cleaned_data["value"]}
-        destination.save()
+        media = Media.objects.get(slug=form.cleaned_data["media"])
+        medium = api_safely_get_medium_object(media.slug)
+        # e.g. "email_address", "phone_number" etc.
+        settings_key = medium.MEDIA_JSON_SCHEMA["required"][0]
+
+        serializer = RequestDestinationConfigSerializer(
+            destination,
+            data={
+                "media": media,
+                "label": form.cleaned_data.get("label", ""),
+                "settings": {settings_key: form.cleaned_data["value"]},
+            },
+            context={"request": request},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=request.user)
+
     return redirect("htmx:destinations")
 
 
