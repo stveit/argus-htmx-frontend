@@ -65,7 +65,7 @@ def destinations_create(request) -> HttpResponse:
             context={"request": request},
         )
         serializer.is_valid(raise_exception=True)
-        serializer.save(user_id=request.user.id)
+        serializer.save(user=request.user)
 
     return redirect("htmx:destinations")
 
