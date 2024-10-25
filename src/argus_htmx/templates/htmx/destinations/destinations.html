@@ -2,7 +2,7 @@
 
 {% block main %}
 
-<form action="{% url 'htmx:destinations-create' %}" method="post">
+<form action="{% url 'htmx:destinations' %}" method="post">
     {% csrf_token %}
     <fieldset class="menu menu-horizontal menu-md border border-primary items-center gap-4">
         <legend class="menu-title">Create destination</legend>

@@ -4,7 +4,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 
 from django.http import HttpResponse
 
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 
 from rest_framework.exceptions import ValidationError
 
@@ -16,8 +16,16 @@ from argus.notificationprofile.media.base import NotificationMedium
 from .forms import DestinationForm
 
 
-@require_GET
+@require_http_methods(["GET", "POST"])
 def destinations(request) -> HttpResponse:
+    if request.method == "GET":
+        return destinations_list(request)
+    elif request.method == "POST":
+        return destinations_create(request)
+
+
+@require_GET
+def destinations_list(request) -> HttpResponse:
     destinations = _get_destinations_and_forms_grouped_by_media(request.user)
     context = {
         "form": DestinationForm(),
