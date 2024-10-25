@@ -8,6 +8,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from argus.notificationprofile.models import DestinationConfig, Media
 from argus.notificationprofile.media import api_safely_get_medium_object
+from argus.notificationprofile.serializers import RequestDestinationConfigSerializer
 
 from .forms import DestinationForm
 
@@ -54,13 +55,18 @@ def destinations_create(request) -> HttpResponse:
         medium = api_safely_get_medium_object(media.slug)
         # e.g. "email_address", "phone_number" etc.
         settings_key = medium.MEDIA_JSON_SCHEMA["required"][0]
-        destination = DestinationConfig.objects.create(
-            user=request.user,
-            media=media,
-            label=form.cleaned_data.get("label", ""),
-            settings={settings_key: form.cleaned_data["value"]},
+
+        serializer = RequestDestinationConfigSerializer(
+            data={
+                "media": media,
+                "label": form.cleaned_data.get("label", ""),
+                "settings": {settings_key: form.cleaned_data["value"]},
+            },
+            context={"request": request},
         )
-        destination.save()
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user_id=request.user.id)
+
     return redirect("htmx:destinations")
 
 
