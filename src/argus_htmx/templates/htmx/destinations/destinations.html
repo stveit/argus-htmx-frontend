@@ -8,11 +8,12 @@
         <legend class="menu-title">Create destination</legend>
 
         {% for field in form %}
-        <label class="input input-bordered flex items-center gap-2">
+        <label class=" flex items-center gap-2">
             {{ field.label }}
-            {{ field }}
         </label>
-
+        <div class="input input-bordered flex items-center gap-2">
+            {{ field }}
+        </div>
         {% empty %}
         <p>
             Something went wrong
