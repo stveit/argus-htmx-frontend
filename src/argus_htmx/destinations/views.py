@@ -38,17 +38,17 @@ def _get_destination_forms_grouped_by_media(user) -> dict[Media, list[Destinatio
     """Returns dict where key is media and value is list of tuples
     containing a destination and a pre-filled form for that destination."""
     grouped_destinations = {}
-
     media = Media.objects.all()
     for m in media:
         grouped_destinations[m] = []
 
     destinations = user.destinations.all()
     for destination in destinations:
+        settings_key = _get_settings_key_for_media(destination.media)
         form = DestinationFormUpdate(
             instance=destination,
             initial={
-                "value": destination.settings.get("email_address", ""),
+                "value": destination.settings.get(settings_key, ""),
             },
         )
         grouped_destinations[destination.media].append(form)
@@ -61,9 +61,7 @@ def destinations_create(request) -> HttpResponse:
     form = DestinationFormCreate(request.POST or None)
     if form.is_valid():
         media = Media.objects.get(slug=form.cleaned_data["media"])
-        medium = api_safely_get_medium_object(media.slug)
-        # e.g. "email_address", "phone_number" etc.
-        settings_key = medium.MEDIA_JSON_SCHEMA["required"][0]
+        settings_key = _get_settings_key_for_media(media)
 
         serializer = RequestDestinationConfigSerializer(
             data={
@@ -84,9 +82,7 @@ def destinations_update(request, pk: int) -> HttpResponse:
     form = DestinationFormUpdate(request.POST or None)
     if form.is_valid():
         destination = DestinationConfig.objects.get(pk=pk)
-        medium = api_safely_get_medium_object(destination.media.slug)
-        # e.g. "email_address", "phone_number" etc.
-        settings_key = medium.MEDIA_JSON_SCHEMA["required"][0]
+        settings_key = _get_settings_key_for_media(destination.media)
 
         data = {}
         if "label" in form.cleaned_data:
@@ -122,3 +118,11 @@ def destinations_delete(request, pk: int) -> HttpResponse:
     else:
         destination.delete()
         return redirect("htmx:destinations")
+
+
+def _get_settings_key_for_media(media: Media) -> str:
+    """Returns the required settings key for the given media,
+    e.g. "email_address", "phone_number"
+    """
+    medium = api_safely_get_medium_object(media.slug)
+    return medium.MEDIA_JSON_SCHEMA["required"][0]
