@@ -1,23 +1,28 @@
-<form action="{% url 'htmx:destinations-update' form.instance.id%}" method="post">
-    {% csrf_token %}
-    <fieldset class="menu menu-horizontal menu-md items-center gap-4">
+<div class="flex w-full">
 
-        {% for field in form %}
-        <label class="input input-bordered flex items-center gap-2">
-            {{ field.label }}
-            {{ field }}
-        </label>
+    <form action="{% url 'htmx:destinations-update' form.instance.id%}" method="post">
+        {% csrf_token %}
+        <fieldset class="menu menu-horizontal menu-md items-center gap-4">
+            {% for field in form %}
+            <label class="input input-bordered flex items-center gap-2">
+                {{ field.label }}
+                {{ field }}
+            </label>
 
-        {% empty %}
-        <p>
-            Something went wrong
-        </p>
-        {% endfor %}
+            {% empty %}
+            <p>
+                Something went wrong
+            </p>
+            {% endfor %}
+        </fieldset>
         <input type="submit" value="Update" class="btn btn-primary">
-    </fieldset>
-</form>
+    </form>
 
-<form action="{% url 'htmx:destinations-delete' form.instance.id%}" method="post">
-    {% csrf_token %}
-    <input type="submit" value="Delete" class="btn btn-secondary">
-</form>
+    <form action="{% url 'htmx:destinations-delete' form.instance.id%}" method="post">
+        {% csrf_token %}
+        <fieldset class="menu menu-horizontal menu-md items-center gap-4">
+            <input type="submit" value="Delete" class="btn btn-secondary">
+        </fieldset>
+    </form>
+
+</div>
