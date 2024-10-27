@@ -13,7 +13,7 @@ from argus.notificationprofile.media import api_safely_get_medium_object
 from argus.notificationprofile.serializers import RequestDestinationConfigSerializer
 from argus.notificationprofile.media.base import NotificationMedium
 
-from .forms import DestinationForm
+from .forms import DestinationFormCreate, DestinationFormUpdate
 
 
 @require_http_methods(["GET", "POST"])
@@ -28,13 +28,13 @@ def destinations(request) -> HttpResponse:
 def destinations_list(request) -> HttpResponse:
     forms = _get_destination_forms_grouped_by_media(request.user)
     context = {
-        "form": DestinationForm(),
+        "form": DestinationFormCreate(),
         "grouped_forms": forms,
     }
     return render(request, "htmx/destinations/destinations.html", context=context)
 
 
-def _get_destination_forms_grouped_by_media(user) -> dict[Media, list[DestinationForm]]:
+def _get_destination_forms_grouped_by_media(user) -> dict[Media, list[DestinationFormUpdate]]:
     """Returns dict where key is media and value is list of tuples
     containing a destination and a pre-filled form for that destination."""
     grouped_destinations = {}
@@ -45,13 +45,12 @@ def _get_destination_forms_grouped_by_media(user) -> dict[Media, list[Destinatio
 
     destinations = user.destinations.all()
     for destination in destinations:
-        form = DestinationForm(
+        form = DestinationFormUpdate(
             instance=destination,
             initial={
                 "value": destination.settings.get("email_address", ""),
             },
         )
-        form.fields["media"].widget.attrs["hidden"] = True
         grouped_destinations[destination.media].append(form)
 
     return grouped_destinations
@@ -59,7 +58,7 @@ def _get_destination_forms_grouped_by_media(user) -> dict[Media, list[Destinatio
 
 @require_POST
 def destinations_create(request) -> HttpResponse:
-    form = DestinationForm(request.POST or None)
+    form = DestinationFormCreate(request.POST or None)
     if form.is_valid():
         media = Media.objects.get(slug=form.cleaned_data["media"])
         medium = api_safely_get_medium_object(media.slug)
@@ -82,7 +81,7 @@ def destinations_create(request) -> HttpResponse:
 
 @require_POST
 def destinations_update(request, pk: int) -> HttpResponse:
-    form = DestinationForm(request.POST or None)
+    form = DestinationFormUpdate(request.POST or None)
     if form.is_valid():
         destination = DestinationConfig.objects.get(pk=pk)
 
