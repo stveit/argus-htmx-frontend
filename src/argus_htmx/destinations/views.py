@@ -84,9 +84,7 @@ def destinations_update(request, pk: int) -> HttpResponse:
     form = DestinationFormUpdate(request.POST or None)
     if form.is_valid():
         destination = DestinationConfig.objects.get(pk=pk)
-
-        media = Media.objects.get(slug=form.cleaned_data["media"])
-        medium = api_safely_get_medium_object(media.slug)
+        medium = api_safely_get_medium_object(destination.media.slug)
         # e.g. "email_address", "phone_number" etc.
         settings_key = medium.MEDIA_JSON_SCHEMA["required"][0]
 
