@@ -1,9 +1,12 @@
 from django import forms
+from django.forms import ModelForm
 
-from argus.notificationprofile.models import Media
+from argus.notificationprofile.models import DestinationConfig
 
 
-class DestinationForm(forms.Form):
-    label = forms.CharField(required=False)
-    media = forms.ChoiceField(choices=[(m.slug, m.name) for m in Media.objects.all()])
+class DestinationForm(ModelForm):
     value = forms.CharField(required=True)
+
+    class Meta:
+        model = DestinationConfig
+        fields = ["label", "media"]
