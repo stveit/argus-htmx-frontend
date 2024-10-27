@@ -23,12 +23,12 @@
 </form>
 
 
-{% for media, destinations in grouped_destinations.items %}
+{% for media, forms in grouped_forms.items %}
 <details class="collapse bg-base-200">
-    <summary class="collapse-title text-xl font-medium">{{ media.name }} ({{ destinations|length }})</summary>
+    <summary class="collapse-title text-xl font-medium">{{ media.name }} ({{ forms|length }})</summary>
     <div class="collapse-content">
-        {% for destination, init_form in destinations %}
-            {% include "htmx/destinations/edit_or_delete_form.html" with form=init_form destination=destination %}
+        {% for form in forms %}
+            {% include "htmx/destinations/edit_or_delete_form.html" %}
         {% endfor %}
     </div>
   </details>

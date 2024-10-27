@@ -26,15 +26,15 @@ def destinations(request) -> HttpResponse:
 
 @require_GET
 def destinations_list(request) -> HttpResponse:
-    destinations = _get_destinations_and_forms_grouped_by_media(request.user)
+    forms = _get_destination_forms_grouped_by_media(request.user)
     context = {
         "form": DestinationForm(),
-        "grouped_destinations": destinations,
+        "grouped_forms": forms,
     }
     return render(request, "htmx/destinations/destinations.html", context=context)
 
 
-def _get_destinations_and_forms_grouped_by_media(user) -> dict[Media, list[DestinationConfig]]:
+def _get_destination_forms_grouped_by_media(user) -> dict[Media, list[DestinationForm]]:
     """Returns dict where key is media and value is list of tuples
     containing a destination and a pre-filled form for that destination."""
     grouped_destinations = {}
@@ -46,14 +46,13 @@ def _get_destinations_and_forms_grouped_by_media(user) -> dict[Media, list[Desti
     destinations = user.destinations.all()
     for destination in destinations:
         form = DestinationForm(
+            instance=destination,
             initial={
-                "label": destination.label,
-                "media": destination.media.slug,
                 "value": destination.settings.get("email_address", ""),
-            }
+            },
         )
         form.fields["media"].widget.attrs["hidden"] = True
-        grouped_destinations[destination.media].append((destination, form))
+        grouped_destinations[destination.media].append(form)
 
     return grouped_destinations
 
