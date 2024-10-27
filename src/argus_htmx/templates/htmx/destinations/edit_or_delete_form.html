@@ -1,6 +1,6 @@
 <form action="{% url 'htmx:destinations-update' form.instance.id%}" method="post">
     {% csrf_token %}
-    <fieldset class="menu menu-horizontal menu-md border border-primary items-center gap-4">
+    <fieldset class="menu menu-horizontal menu-md items-center gap-4">
 
         {% for field in form %}
         <label class="input input-bordered flex items-center gap-2">
