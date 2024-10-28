@@ -15,6 +15,8 @@ from argus.notificationprofile.media.base import NotificationMedium
 
 from .forms import DestinationFormCreate, DestinationFormUpdate
 
+from .utils import _get_settings_key_for_media
+
 
 @require_http_methods(["GET", "POST"])
 def destinations(request) -> HttpResponse:
@@ -118,11 +120,3 @@ def destinations_delete(request, pk: int) -> HttpResponse:
     else:
         destination.delete()
         return redirect("htmx:destinations")
-
-
-def _get_settings_key_for_media(media: Media) -> str:
-    """Returns the required settings key for the given media,
-    e.g. "email_address", "phone_number"
-    """
-    medium = api_safely_get_medium_object(media.slug)
-    return medium.MEDIA_JSON_SCHEMA["required"][0]
