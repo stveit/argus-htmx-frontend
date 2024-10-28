@@ -11,6 +11,9 @@ class DestinationFormCreate(ModelForm):
     class Meta:
         model = DestinationConfig
         fields = ["label", "media", "settings"]
+        labels = {
+            "label": "Name",
+        }
 
     def clean(self):
         settings_key = _get_settings_key_for_media(self.cleaned_data["media"])
@@ -24,3 +27,6 @@ class DestinationFormUpdate(ModelForm):
     class Meta:
         model = DestinationConfig
         fields = ["label"]
+        labels = {
+            "label": "Name",
+        }
