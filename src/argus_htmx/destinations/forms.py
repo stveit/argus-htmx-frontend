@@ -16,6 +16,7 @@ class DestinationFormCreate(ModelForm):
         }
 
     def clean(self):
+        super().clean()
         settings_key = _get_settings_key_for_media(self.cleaned_data["media"])
         self.cleaned_data["settings"] = {settings_key: self.cleaned_data["settings"]}
         return self.cleaned_data
