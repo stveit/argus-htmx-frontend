@@ -62,14 +62,11 @@ def _get_destination_forms_grouped_by_media(user) -> dict[Media, list[Destinatio
 def destinations_create(request) -> HttpResponse:
     form = DestinationFormCreate(request.POST or None)
     if form.is_valid():
-        media = Media.objects.get(slug=form.cleaned_data["media"])
-        settings_key = _get_settings_key_for_media(media)
-
         serializer = RequestDestinationConfigSerializer(
             data={
-                "media": media,
+                "media": form.cleaned_data["media"],
                 "label": form.cleaned_data.get("label", ""),
-                "settings": {settings_key: form.cleaned_data["value"]},
+                "settings": form.cleaned_data["settings"],
             },
             context={"request": request},
         )
