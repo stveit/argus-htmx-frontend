@@ -72,6 +72,29 @@ class DestinationFormUpdate(DestinationFormCreate):
             instance.settings = instance.settings.get(settings_key)
         super().__init__(*args, **kwargs)
 
+    def _init_serializer(self):
+        # Get unmodified version of original destination
+        destination = DestinationConfig.objects.get(pk=self.instance.pk)
+        settings_key = _get_settings_key_for_media(destination.media)
+        data = {}
+
+        if "label" in self.cleaned_data:
+            label = self.cleaned_data["label"]
+            if label != destination.label:
+                data["label"] = label
+
+        settings = self.cleaned_data["settings"]
+        # If email, phone number etc. is different in the form than in the database
+        if settings.get(settings_key) != destination.settings.get(settings_key):
+            data["settings"] = settings
+
+        self.serializer = RequestDestinationConfigSerializer(
+            destination,
+            data=data,
+            context={"request": self.request},
+            partial=True,
+        )
+
     class Meta:
         model = DestinationConfig
         fields = ["label", "media", "settings"]

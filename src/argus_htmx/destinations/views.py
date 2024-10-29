@@ -15,8 +15,6 @@ from argus.notificationprofile.media.base import NotificationMedium
 
 from .forms import DestinationFormCreate, DestinationFormUpdate
 
-from .utils import _get_settings_key_for_media
-
 
 @require_http_methods(["GET", "POST"])
 def destinations(request) -> HttpResponse:
@@ -65,29 +63,10 @@ def destinations_create(request) -> HttpResponse:
 
 @require_POST
 def destinations_update(request, pk: int) -> HttpResponse:
-    form = DestinationFormUpdate(request.POST or None)
+    destination = DestinationConfig.objects.get(pk=pk)
+    form = DestinationFormUpdate(request.POST or None, instance=destination, request=request)
     if form.is_valid():
-        destination = DestinationConfig.objects.get(pk=pk)
-        settings_key = _get_settings_key_for_media(destination.media)
-        data = {}
-        if "label" in form.cleaned_data:
-            label = form.cleaned_data["label"]
-            if label != destination.label:
-                data["label"] = label
-        settings = form.cleaned_data["settings"]
-        # If email, phone number etc. is different in the form than in the database
-        if settings.get(settings_key) != destination.settings.get(settings_key):
-            data["settings"] = settings
-
-        serializer = RequestDestinationConfigSerializer(
-            destination,
-            data=data,
-            context={"request": request},
-            partial=True,
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save(user=request.user)
-
+        form.save()
     return redirect("htmx:destinations")
 
 
