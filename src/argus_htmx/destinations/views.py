@@ -83,11 +83,10 @@ def destinations_update(request, pk: int) -> HttpResponse:
             label = form.cleaned_data["label"]
             if label != destination.label:
                 data["label"] = label
-        if "settings" in form.cleaned_data:
-            settings = form.cleaned_data["settings"]
-            # If email, phone number etc. is different in the form than in the database
-            if settings.get(settings_key) != destination.settings.get(settings_key):
-                data["settings"] = settings
+        settings = form.cleaned_data["settings"]
+        # If email, phone number etc. is different in the form than in the database
+        if settings.get(settings_key) != destination.settings.get(settings_key):
+            data["settings"] = settings
 
         serializer = RequestDestinationConfigSerializer(
             destination,
