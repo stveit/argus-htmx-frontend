@@ -15,6 +15,9 @@
             <div class="input input-bordered flex items-center gap-2">
                 {{ field }}
             </div>
+            {% if field.errors %}
+                <p class="text-error">{{ field.errors }}</p>
+            {% endif %}
             {% empty %}
             <p>
                 Something went wrong

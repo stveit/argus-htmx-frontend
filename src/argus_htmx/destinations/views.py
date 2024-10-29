@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 
 from django.shortcuts import redirect, render, get_object_or_404
 
@@ -24,16 +25,22 @@ def destinations(request) -> HttpResponse:
         return destinations_create(request)
 
 
-def destinations_list(request, create_form: DestinationFormCreate) -> HttpResponse:
-    forms = _get_destination_forms_grouped_by_media(request.user)
+def destinations_list(
+    request,
+    create_form: DestinationFormCreate,
+    error_update_form: Optional[DestinationFormUpdate] = None,
+) -> HttpResponse:
+    update_forms = _get_destination_forms_grouped_by_media(request.user, error_update_form)
     context = {
         "form": create_form,
-        "grouped_forms": forms,
+        "grouped_forms": update_forms,
     }
     return render(request, "htmx/destinations/destinations.html", context=context)
 
 
-def _get_destination_forms_grouped_by_media(user) -> dict[Media, list[DestinationFormUpdate]]:
+def _get_destination_forms_grouped_by_media(
+    user, error_form: Optional[DestinationFormUpdate] = None
+) -> dict[Media, list[DestinationFormUpdate]]:
     """Returns dict where key is media and value is list of tuples
     containing a destination and a pre-filled form for that destination."""
     grouped_destinations = {}
@@ -43,9 +50,12 @@ def _get_destination_forms_grouped_by_media(user) -> dict[Media, list[Destinatio
 
     destinations = user.destinations.all()
     for destination in destinations:
-        form = DestinationFormUpdate(
-            instance=destination,
-        )
+        if error_form and destination.pk == error_form.instance.pk:
+            form = error_form
+        else:
+            form = DestinationFormUpdate(
+                instance=destination,
+            )
         grouped_destinations[destination.media].append(form)
 
     return grouped_destinations
@@ -67,7 +77,8 @@ def destinations_update(request, pk: int) -> HttpResponse:
     form = DestinationFormUpdate(request.POST or None, instance=destination, request=request)
     if form.is_valid():
         form.save()
-    return redirect("htmx:destinations")
+        return redirect("htmx:destinations")
+    return destinations_list(request, DestinationFormCreate(), form)
 
 
 @require_POST
