@@ -62,6 +62,13 @@ class DestinationFormCreate(ModelForm):
             if settings := self.serializer.validated_data.get("settings"):
                 self.cleaned_data["settings"] = settings
 
+        if label := self.cleaned_data["label"]:
+            filter = DestinationConfig.objects.filter(label=label)
+            if self.instance:
+                filter = filter.exclude(pk=self.instance.pk)
+            if filter.exists():
+                self.add_error("label", "Name must be unique per media")
+
         return self.cleaned_data
 
 
