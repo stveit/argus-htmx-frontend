@@ -79,6 +79,16 @@ class DestinationFormUpdate(DestinationFormCreate):
             instance.settings = instance.settings.get(settings_key)
         super().__init__(*args, **kwargs)
 
+    class Meta:
+        model = DestinationConfig
+        fields = ["label", "media", "settings"]
+        labels = {
+            "label": "Name",
+        }
+        widgets = {
+            "media": forms.HiddenInput(),
+        }
+
     def _init_serializer(self):
         # Get unmodified version of original destination
         destination = DestinationConfig.objects.get(pk=self.instance.pk)
@@ -101,13 +111,3 @@ class DestinationFormUpdate(DestinationFormCreate):
             context={"request": self.request},
             partial=True,
         )
-
-    class Meta:
-        model = DestinationConfig
-        fields = ["label", "media", "settings"]
-        labels = {
-            "label": "Name",
-        }
-        widgets = {
-            "media": forms.HiddenInput(),
-        }
