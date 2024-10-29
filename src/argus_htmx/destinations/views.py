@@ -11,7 +11,6 @@ from rest_framework.exceptions import ValidationError
 
 from argus.notificationprofile.models import DestinationConfig, Media
 from argus.notificationprofile.media import api_safely_get_medium_object
-from argus.notificationprofile.serializers import RequestDestinationConfigSerializer
 from argus.notificationprofile.media.base import NotificationMedium
 
 from .forms import DestinationFormCreate, DestinationFormUpdate
