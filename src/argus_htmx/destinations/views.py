@@ -20,17 +20,19 @@ from .forms import DestinationFormCreate, DestinationFormUpdate
 @require_http_methods(["GET", "POST"])
 def destinations(request) -> HttpResponse:
     if request.method == "GET":
-        return destinations_list(request, DestinationFormCreate())
+        return destinations_list(request)
     elif request.method == "POST":
         return destinations_create(request)
 
 
 def destinations_list(
     request,
-    create_form: DestinationFormCreate,
+    create_form: Optional[DestinationFormCreate] = None,
     error_update_form: Optional[DestinationFormUpdate] = None,
 ) -> HttpResponse:
     update_forms = _get_destination_forms_grouped_by_media(request.user, error_update_form)
+    if create_form is None:
+        create_form = DestinationFormCreate()
     context = {
         "form": create_form,
         "grouped_forms": update_forms,
@@ -78,7 +80,7 @@ def destinations_update(request, pk: int) -> HttpResponse:
     if form.is_valid():
         form.save()
         return redirect("htmx:destinations")
-    return destinations_list(request, DestinationFormCreate(), form)
+    return destinations_list(request, error_update_form=form)
 
 
 @require_POST
