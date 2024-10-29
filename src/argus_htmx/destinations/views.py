@@ -49,7 +49,8 @@ def _get_destination_forms_grouped_by_media(
     for m in media:
         grouped_destinations[m] = []
 
-    destinations = user.destinations.all()
+    # Sort by oldest first
+    destinations = user.destinations.all().order_by("pk")
     for destination in destinations:
         if error_form and destination.pk == error_form.instance.pk:
             form = error_form
