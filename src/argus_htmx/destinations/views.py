@@ -46,12 +46,8 @@ def _get_destination_forms_grouped_by_media(user) -> dict[Media, list[Destinatio
 
     destinations = user.destinations.all()
     for destination in destinations:
-        settings_key = _get_settings_key_for_media(destination.media)
         form = DestinationFormUpdate(
             instance=destination,
-            initial={
-                "value": destination.settings.get(settings_key, ""),
-            },
         )
         grouped_destinations[destination.media].append(form)
 
@@ -82,16 +78,16 @@ def destinations_update(request, pk: int) -> HttpResponse:
     if form.is_valid():
         destination = DestinationConfig.objects.get(pk=pk)
         settings_key = _get_settings_key_for_media(destination.media)
-
         data = {}
         if "label" in form.cleaned_data:
             label = form.cleaned_data["label"]
             if label != destination.label:
                 data["label"] = label
-        if "value" in form.cleaned_data:
-            value = form.cleaned_data["value"]
-            if value != destination.settings.get(settings_key):
-                data["settings"] = {settings_key: value}
+        if "settings" in form.cleaned_data:
+            settings = form.cleaned_data["settings"]
+            # If email, phone number etc. is different in the form than in the database
+            if settings.get(settings_key) != destination.settings.get(settings_key):
+                data["settings"] = settings
 
         serializer = RequestDestinationConfigSerializer(
             destination,

@@ -3,7 +3,12 @@
     <form action="{% url 'htmx:destinations-update' form.instance.id%}" method="post">
         {% csrf_token %}
         <fieldset class="menu menu-horizontal menu-md items-center gap-4">
-            {% for field in form %}
+
+            {% for hidden_field in form.hidden_fields %}
+                {{ hidden_field }}
+            {% endfor %}
+
+            {% for field in form.visible_fields %}
             <label class=" flex items-center gap-2">
                 {{ field.label }}
             </label>
