@@ -69,7 +69,7 @@ def destinations_create(request) -> HttpResponse:
     if form.is_valid():
         form.save()
         return redirect("htmx:destinations")
-    return destinations_list(request, form)
+    return destinations_list(request, create_form=form)
 
 
 @require_POST
