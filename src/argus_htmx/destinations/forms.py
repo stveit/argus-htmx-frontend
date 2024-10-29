@@ -4,7 +4,7 @@ from django.forms import ModelForm
 from argus.notificationprofile.models import DestinationConfig
 from argus.notificationprofile.serializers import RequestDestinationConfigSerializer
 
-from .utils import _get_settings_key_for_media
+from .utils import get_settings_key_for_media
 
 
 class DestinationFormCreate(ModelForm):
@@ -23,7 +23,7 @@ class DestinationFormCreate(ModelForm):
 
     def clean(self):
         super().clean()
-        settings_key = _get_settings_key_for_media(self.cleaned_data["media"])
+        settings_key = get_settings_key_for_media(self.cleaned_data["media"])
         self.cleaned_data["settings"] = {settings_key: self.cleaned_data["settings"]}
         self._init_serializer()
         return self._validate_serializer()
@@ -45,7 +45,7 @@ class DestinationFormCreate(ModelForm):
 
     def _validate_serializer(self):
         media = self.cleaned_data["media"]
-        settings_key = _get_settings_key_for_media(media)
+        settings_key = get_settings_key_for_media(media)
 
         # Add error messages from serializer to form
         if not self.serializer.is_valid():
@@ -68,14 +68,14 @@ class DestinationFormCreate(ModelForm):
 class DestinationFormUpdate(DestinationFormCreate):
     def __init__(self, *args, **kwargs):
         if instance := kwargs.get("instance"):
-            settings_key = _get_settings_key_for_media(instance.media)
+            settings_key = get_settings_key_for_media(instance.media)
             instance.settings = instance.settings.get(settings_key)
         super().__init__(*args, **kwargs)
 
     def _init_serializer(self):
         # Get unmodified version of original destination
         destination = DestinationConfig.objects.get(pk=self.instance.pk)
-        settings_key = _get_settings_key_for_media(destination.media)
+        settings_key = get_settings_key_for_media(destination.media)
         data = {}
 
         if "label" in self.cleaned_data:

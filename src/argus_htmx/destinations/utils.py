@@ -2,7 +2,7 @@ from argus.notificationprofile.models import Media
 from argus.notificationprofile.media import api_safely_get_medium_object
 
 
-def _get_settings_key_for_media(media: Media) -> str:
+def get_settings_key_for_media(media: Media) -> str:
     """Returns the required settings key for the given media,
     e.g. "email_address", "phone_number"
     """
