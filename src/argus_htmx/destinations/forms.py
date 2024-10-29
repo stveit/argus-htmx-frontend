@@ -2,11 +2,17 @@ from django import forms
 from django.forms import ModelForm
 
 from argus.notificationprofile.models import DestinationConfig
+from argus.notificationprofile.serializers import RequestDestinationConfigSerializer
+
 from .utils import _get_settings_key_for_media
 
 
 class DestinationFormCreate(ModelForm):
     settings = forms.CharField(required=True)
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request", None)
+        super().__init__(*args, **kwargs)
 
     class Meta:
         model = DestinationConfig
@@ -19,6 +25,43 @@ class DestinationFormCreate(ModelForm):
         super().clean()
         settings_key = _get_settings_key_for_media(self.cleaned_data["media"])
         self.cleaned_data["settings"] = {settings_key: self.cleaned_data["settings"]}
+        self._init_serializer()
+        return self._validate_serializer()
+
+    def save(self):
+        # self.serializer should be initiated in clean() before save() is called
+        self.serializer.save(user=self.request.user)
+
+    def _init_serializer(self):
+        serializer = RequestDestinationConfigSerializer(
+            data={
+                "media": self.cleaned_data["media"],
+                "label": self.cleaned_data.get("label", ""),
+                "settings": self.cleaned_data["settings"],
+            },
+            context={"request": self.request},
+        )
+        self.serializer = serializer
+
+    def _validate_serializer(self):
+        media = self.cleaned_data["media"]
+        settings_key = _get_settings_key_for_media(media)
+
+        # Add error messages from serializer to form
+        if not self.serializer.is_valid():
+            for error_name, error_detail in self.serializer.errors.items():
+                if error_name in ["media", "label", settings_key]:
+                    if error_name == settings_key:
+                        error_name = "settings"
+                    self.add_error(error_name, error_detail)
+                    # Serializer might add more data to the JSON dict
+                    if settings := self.serializer.data.get("settings"):
+                        self.cleaned_data["settings"] = settings
+        else:
+            # Serializer might add more data to the JSON dict
+            if settings := self.serializer.validated_data.get("settings"):
+                self.cleaned_data["settings"] = settings
+
         return self.cleaned_data
 
 

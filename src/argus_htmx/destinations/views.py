@@ -4,7 +4,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 
 from django.http import HttpResponse
 
-from django.views.decorators.http import require_GET, require_POST, require_http_methods
+from django.views.decorators.http import require_POST, require_http_methods
 
 from rest_framework.exceptions import ValidationError
 
@@ -21,16 +21,15 @@ from .utils import _get_settings_key_for_media
 @require_http_methods(["GET", "POST"])
 def destinations(request) -> HttpResponse:
     if request.method == "GET":
-        return destinations_list(request)
+        return destinations_list(request, DestinationFormCreate())
     elif request.method == "POST":
         return destinations_create(request)
 
 
-@require_GET
-def destinations_list(request) -> HttpResponse:
+def destinations_list(request, create_form: DestinationFormCreate) -> HttpResponse:
     forms = _get_destination_forms_grouped_by_media(request.user)
     context = {
-        "form": DestinationFormCreate(),
+        "form": create_form,
         "grouped_forms": forms,
     }
     return render(request, "htmx/destinations/destinations.html", context=context)
@@ -56,20 +55,12 @@ def _get_destination_forms_grouped_by_media(user) -> dict[Media, list[Destinatio
 
 @require_POST
 def destinations_create(request) -> HttpResponse:
-    form = DestinationFormCreate(request.POST or None)
-    if form.is_valid():
-        serializer = RequestDestinationConfigSerializer(
-            data={
-                "media": form.cleaned_data["media"],
-                "label": form.cleaned_data.get("label", ""),
-                "settings": form.cleaned_data["settings"],
-            },
-            context={"request": request},
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save(user=request.user)
+    form = DestinationFormCreate(request.POST or None, request=request)
 
-    return redirect("htmx:destinations")
+    if form.is_valid():
+        form.save()
+        return redirect("htmx:destinations")
+    return destinations_list(request, form)
 
 
 @require_POST
