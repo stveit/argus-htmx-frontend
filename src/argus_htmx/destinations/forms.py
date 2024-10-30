@@ -90,7 +90,8 @@ class DestinationFormUpdate(DestinationFormCreate):
         }
 
     def _init_serializer(self):
-        # Get unmodified version of original destination
+        # self.instance is modified in __init__,
+        # so get unmodified version here for the serializer
         destination = DestinationConfig.objects.get(pk=self.instance.pk)
         settings_key = get_settings_key_for_media(destination.media)
         data = {}
