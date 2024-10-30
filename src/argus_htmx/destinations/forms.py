@@ -29,7 +29,7 @@ class DestinationFormCreate(ModelForm):
         return self._validate_serializer()
 
     def save(self):
-        # self.serializer should be initiated in clean() before save() is called
+        # self.serializer should be initiated and validated in clean() before save() is called
         self.serializer.save(user=self.request.user)
 
     def _init_serializer(self):
