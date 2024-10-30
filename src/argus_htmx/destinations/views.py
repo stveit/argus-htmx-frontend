@@ -5,10 +5,11 @@ from django.http import HttpResponse
 
 from rest_framework.exceptions import ValidationError
 
+from argus.notificationprofile.models import DestinationConfig
 from argus.notificationprofile.media import api_safely_get_medium_object
 from argus.notificationprofile.media.base import NotificationMedium
 
-from .forms import DestinationFormCreate
+from .forms import DestinationFormCreate, DestinationFormUpdate
 
 
 @require_http_methods(["GET", "POST"])
@@ -38,6 +39,15 @@ def destinations_delete(request, pk: int) -> HttpResponse:
     else:
         destination.delete()
         return _render_destinations(request)
+
+
+@require_http_methods(["POST"])
+def destinations_update(request, pk: int) -> HttpResponse:
+    destination = DestinationConfig.objects.get(pk=pk)
+    form = DestinationFormUpdate(request.POST or None, instance=destination, request=request)
+    if form.is_valid():
+        form.save()
+    return _render_destinations(request)
 
 
 def _render_destinations(request) -> HttpResponse:
